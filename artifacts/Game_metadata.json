@@ -7,51 +7,56 @@
 		"abi": [
 			{
 				"inputs": [],
-				"name": "Anum",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
+				"stateMutability": "nonpayable",
+				"type": "constructor"
 			},
 			{
 				"inputs": [],
-				"name": "Bnum",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "playerA",
-				"outputs": [
-					{
-						"internalType": "address payable",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "playerB",
+				"name": "challenger",
 				"outputs": [
 					{
 						"internalType": "address",
 						"name": "",
 						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "joinGame",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "ownerSubmit",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -71,7 +76,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"stage2.sol": "diceGame"
+			"stage2.sol": "Game"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -86,11 +91,11 @@
 	},
 	"sources": {
 		"stage2.sol": {
-			"keccak256": "0xbfbfe24d1de505b0df7a769c71330e2e33e415adb601c67a8ff3bc70123fb513",
+			"keccak256": "0xf86584bbe5b0792f708d681b9ea7a4451c00b24fca661849154eaaeb99cb69fd",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://35fbc5058d0f9c007a42f1680cd769dafaf8b54bbafd0146543b5f460e79eece",
-				"dweb:/ipfs/QmPHyNEEmcLQevjggtKSFApaKSF4kpZdDr1aJBwAFApv2a"
+				"bzz-raw://93716883f8b5c168fd6aab4478547cbcad3d7e909fe73a8623195a79e2e95bfb",
+				"dweb:/ipfs/QmNnKHRzXai2w2MB69o1SphefcTM93YteJEpc7su7ZmWtF"
 			]
 		}
 	},

@@ -1,0 +1,332 @@
+{
+	"compiler": {
+		"version": "0.8.31+commit.fd3a2265"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "slot",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "answer",
+						"type": "string"
+					}
+				],
+				"name": "AnswerSubmitted",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "slot",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "player",
+						"type": "address"
+					}
+				],
+				"name": "PlayerJoined",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "question",
+						"type": "string"
+					}
+				],
+				"name": "QuestionSet",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "result",
+						"type": "uint256"
+					}
+				],
+				"name": "ResultCalculated",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "answers",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "gameActive",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "slot",
+						"type": "uint256"
+					}
+				],
+				"name": "getAnswer",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getLengths",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "len1",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "len2",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "slot",
+						"type": "uint256"
+					}
+				],
+				"name": "getPlayer",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getResult",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "slot",
+						"type": "uint256"
+					}
+				],
+				"name": "join",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "players",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "question",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "reset",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_question",
+						"type": "string"
+					}
+				],
+				"name": "setQuestion",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "answer",
+						"type": "string"
+					}
+				],
+				"name": "submitAnswer",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"getResult()": {
+					"details": "Returns 0 if not both answers are submitted yet"
+				}
+			},
+			"title": "LengthModGame",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"getLengths()": {
+					"notice": "Get both answer lengths (for transparency)"
+				},
+				"getResult()": {
+					"notice": "View the final result: (len1 + len2) % 6 + 1"
+				},
+				"join(uint256)": {
+					"notice": "Join as player 0 or 1"
+				},
+				"reset()": {
+					"notice": "Reset everything for a new game (owner only)"
+				},
+				"setQuestion(string)": {
+					"notice": "Owner sets the question (can be called only before game starts)"
+				},
+				"submitAnswer(string)": {
+					"notice": "Submit your answer (only once)"
+				}
+			},
+			"notice": "Super simple 2-player question game:   - Owner sets one question   - Two players join and submit any string answer   - Result = (len(answer1) + len(answer2)) % 6 + 1   - That's it — no roll function, no winner declared, just the number 1–6",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"stage2.sol": "LengthModGame"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"stage2.sol": {
+			"keccak256": "0x1102a1fab17913e041ce46be46962177655c8d026f924da7709d3e6c39be08e8",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://7b017e64355966ad88d8665ecff34be5dbfa86027a27de6acd1cbd62abb5487c",
+				"dweb:/ipfs/QmUqVts2yvXY3XJGZxYKeh28NNEvAAuREmxCbyGujpGWk9"
+			]
+		}
+	},
+	"version": 1
+}
