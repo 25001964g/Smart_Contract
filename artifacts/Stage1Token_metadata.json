@@ -253,7 +253,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"test.sol": "diceGame"
+			"stage1.sol": "Stage1Token"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -267,12 +267,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"test.sol": {
-			"keccak256": "0xfb8391e3b570ed28857d150d50550184912109e774a00858aff01d7fd37a7caf",
+		"stage1.sol": {
+			"keccak256": "0x73d8934d56d31cd940857c5f0e8ffe239f637175bc2186cf3a142518768cb999",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://606518252071c48bf72d3a51bf39e175b94b3cc3aa6f3c216299d28178e946bc",
-				"dweb:/ipfs/QmPT7WD5qNqoYAg3cZANXfYfM5tMLHoqSWqtS8BugSyocv"
+				"bzz-raw://d65bec91510b761e167661534778822646adf57f1c0c18d9bf97adbe8df1f056",
+				"dweb:/ipfs/Qma9iyRVyhaLjEdU8Q2TTZ7yar63G5eY2B1sgFzwmYWXaB"
 			]
 		}
 	},
