@@ -25,6 +25,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "gameResult",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "joinGame",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -47,11 +60,56 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "_ownerAns",
 						"type": "uint256"
 					}
 				],
 				"name": "ownerSubmit",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "ownerViewAns",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_playerAns",
+						"type": "uint256"
+					}
+				],
+				"name": "playerSubmit",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "playerViewAns",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -91,11 +149,11 @@
 	},
 	"sources": {
 		"stage2.sol": {
-			"keccak256": "0xf86584bbe5b0792f708d681b9ea7a4451c00b24fca661849154eaaeb99cb69fd",
+			"keccak256": "0x7af3669308d8f8af2ffdb216788c98d909354290ac4b1ba5eb6a636c660129e1",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://93716883f8b5c168fd6aab4478547cbcad3d7e909fe73a8623195a79e2e95bfb",
-				"dweb:/ipfs/QmNnKHRzXai2w2MB69o1SphefcTM93YteJEpc7su7ZmWtF"
+				"bzz-raw://189021ed4f2842a332a720a175f45783484b53a822d8a59bb696dc0ec39a08bf",
+				"dweb:/ipfs/QmXizDbShUaaZ5LVVbasg5rJ6myEM5CDX9EVGc5NJzi6r4"
 			]
 		}
 	},

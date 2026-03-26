@@ -7,6 +7,14 @@ contract Game{
     address public challenger;
     uint256 private ownerAns;
     uint256 private playerAns;
+    uint256 private result;
+    string private ownerStatis;
+    
+    enum Status { None, Submitted }
+
+    Status private playerStatus;
+    Status private ownerStatus;
+
 
     constructor() {
         owner = msg.sender;
@@ -19,11 +27,42 @@ contract Game{
         challenger = msg.sender;
     }
 
-    function ownerSubmit(uint256 _ownerAns) public view returns (uint256){
+
+    function ownerSubmit(uint256 _ownerAns) public returns (uint256) {
         require(msg.sender == owner, "only owner");
         require(challenger != address(0), "no player joined");
-        ownerAns = _ownerAns;
 
+        ownerAns = _ownerAns;
+        ownerStatus = Status.Submitted;
+        return ownerAns;
     }
+
+    function playerSubmit(uint256 _playerAns) public returns (uint256) {
+        require(msg.sender == challenger, "only challenger");
+        require(challenger != address(0), "you need to joined");
+
+        playerAns = _playerAns;
+        playerStatus = Status.Submitted;
+        return playerAns;
+    }
+
+    function playerViewAns() public view returns(uint256){
+        require(msg.sender == challenger, "only player");
+        return playerAns;
+    }
+
+    
+
+    function ownerViewAns() public view returns (uint256) {
+        require(msg.sender == owner, "only owner");
+        return ownerAns;
+    }
+
+    function gameResult() public view returns(uint256){
+        require(playerStatus == Status.Submitted, "input the value");
+        require(ownerStatus == Status.Submitted, "input the value");
+        return (playerAns+ownerAns)%6+1;
+    }
+
 
 }
