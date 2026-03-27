@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.31+commit.fd3a2265"
+		"version": "0.8.34+commit.80d5c536"
 	},
 	"language": "Solidity",
 	"output": {
@@ -12,15 +12,9 @@
 			},
 			{
 				"inputs": [],
-				"name": "challenger",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
+				"name": "confirmWinner",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -31,16 +25,14 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "joinGame",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -83,6 +75,19 @@
 						"internalType": "uint256",
 						"name": "",
 						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "player",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
 					}
 				],
 				"stateMutability": "view",
@@ -149,11 +154,11 @@
 	},
 	"sources": {
 		"stage2.sol": {
-			"keccak256": "0x7af3669308d8f8af2ffdb216788c98d909354290ac4b1ba5eb6a636c660129e1",
+			"keccak256": "0xfd77a50582435bfbd8ce9ad04ace1851e0f5ecfa05b7034a44cf7e0de37985fa",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://189021ed4f2842a332a720a175f45783484b53a822d8a59bb696dc0ec39a08bf",
-				"dweb:/ipfs/QmXizDbShUaaZ5LVVbasg5rJ6myEM5CDX9EVGc5NJzi6r4"
+				"bzz-raw://275436f6addb38d706a1dac378a37df899ce4b64b3f13f87507383673888be01",
+				"dweb:/ipfs/QmeDx1DtVP4nzikStXkm847uQh2EjMX9PdUPWYjrUA7bmD"
 			]
 		}
 	},
