@@ -1,0 +1,59 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "name",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"testDeployGame.sol": "ContractA"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"testDeployGame.sol": {
+			"keccak256": "0xfd806ee8ba0c552a5df0df8aed5cc845164d78af66febe5b663f369fee50b923",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5647d305f710dafed1741279cd09181dd0a734e479ea0d9f7ad68aa851aa6b73",
+				"dweb:/ipfs/QmcDeHQRTTg1UHCakuj2VJjNafCXM8HtCfTqtxFMGFw1EB"
+			]
+		}
+	},
+	"version": 1
+}

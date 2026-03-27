@@ -1,0 +1,53 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "deposit",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"payabletesting.sol": "Tr"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"payabletesting.sol": {
+			"keccak256": "0xd4825a8d694d654cee19acedd64eb77cabf4f8fb401abbf9a5a2f56e45073c29",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f1f5d91f23337056f7552205f55b727a5e7ecf211720891c1ef3e1c3b3f1ca22",
+				"dweb:/ipfs/QmRVU2iaLtgGVfHAwow9uxi8QmM7UcdVDeE2d9rzeiTkSs"
+			]
+		}
+	},
+	"version": 1
+}

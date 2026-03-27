@@ -1,0 +1,64 @@
+{
+	"compiler": {
+		"version": "0.8.34+commit.80d5c536"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "A_ADDRESS",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"testDeployGame.sol": "B"
+		},
+		"evmVersion": "osaka",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"testDeployGame.sol": {
+			"keccak256": "0x3691958c601fb95eade5004942070d42dadff724b559bac3026c159ee2fb2591",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://0a26c7987de46ed599d9d6ab1931f5234edcf83fb694fa1a292f000c56da1672",
+				"dweb:/ipfs/Qmazpugb2yZi3j1oZWHdivUis95YGo7gyXmufvnsoUXxxN"
+			]
+		}
+	},
+	"version": 1
+}

@@ -19,6 +19,10 @@ contract Game{
     }
 
 //Step 1: Once both game host and player submit the Number, that means they agree to join the game
+    function hashing(uint _ownerAns) private returns(uint256){
+        bytes32 salt = ethers.randomBytes(32);
+    }
+    
     function ownerSubmit(uint256 _ownerAns) public returns (uint256) {
         require(msg.sender == owner, "only owner");
         require(ownerStatus!= Status.Submitted, "You have already submitted");
