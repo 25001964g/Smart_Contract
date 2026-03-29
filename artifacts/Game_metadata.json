@@ -212,11 +212,11 @@
 	},
 	"sources": {
 		"stage2.sol": {
-			"keccak256": "0x58893b3ebc7749bd74dfa1e162826c0199a76c2141a6e521cb22e4655fc2dde0",
+			"keccak256": "0x99eea80d4ee85847ad09018f1ff05540a45106b78e738590bb54bf9280ec7e47",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://369b3512412e1500b76d45de22fc3503ca0845d757d887ca5b43225affe8842e",
-				"dweb:/ipfs/QmaNHnyf3AH35pFNG5LQJWqJpwR4av3j19T1zy9n5iVgVp"
+				"bzz-raw://8f085abc37f3c8fd99273525a7bb151d200d16ddef27c66b6db0bd304388a77f",
+				"dweb:/ipfs/QmNMotPDtzU1uMkGDgx4EWUJSDHCLavZzFD2W3nLdMH74b"
 			]
 		}
 	},
