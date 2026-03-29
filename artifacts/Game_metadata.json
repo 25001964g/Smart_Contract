@@ -52,7 +52,36 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
+						"name": "_ownerPW_Confirm",
+						"type": "uint256"
+					}
+				],
+				"name": "ownerReveal",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
 						"name": "_ownerAns",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_ownerPW",
 						"type": "uint256"
 					}
 				],
@@ -97,7 +126,36 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
+						"name": "_playerPW_Confirm",
+						"type": "uint256"
+					}
+				],
+				"name": "playerReveal",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
 						"name": "_playerAns",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_playerPW",
 						"type": "uint256"
 					}
 				],
@@ -154,11 +212,11 @@
 	},
 	"sources": {
 		"stage2.sol": {
-			"keccak256": "0x1282a0e5b04b0e052b6f09d5fb4a0bf959d96f16c6f98c4c48334f7e399fc447",
+			"keccak256": "0x58893b3ebc7749bd74dfa1e162826c0199a76c2141a6e521cb22e4655fc2dde0",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8b20861717033b63f45b1e2b04b2bf781a33f00e805b3bc991a8a367e59c9948",
-				"dweb:/ipfs/QmUPPsK6qjkMmdSqYvWSKDXiWH3Cg3c8iGCNBVq27kFuV2"
+				"bzz-raw://369b3512412e1500b76d45de22fc3503ca0845d757d887ca5b43225affe8842e",
+				"dweb:/ipfs/QmaNHnyf3AH35pFNG5LQJWqJpwR4av3j19T1zy9n5iVgVp"
 			]
 		}
 	},
