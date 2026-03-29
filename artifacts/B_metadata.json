@@ -6,16 +6,86 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "address payable",
+						"name": "_treasury",
+						"type": "address"
+					}
+				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
 			},
 			{
-				"inputs": [],
-				"name": "A_ADDRESS",
-				"outputs": [
+				"inputs": [
 					{
 						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "answers",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "entryFee",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "hasPlayed",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_answer",
+						"type": "uint256"
+					}
+				],
+				"name": "playGame",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "treasury",
+				"outputs": [
+					{
+						"internalType": "address payable",
 						"name": "",
 						"type": "address"
 					}
@@ -37,7 +107,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"testDeployGame.sol": "B"
+			"testTransfer.sol": "B"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -51,12 +121,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"testDeployGame.sol": {
-			"keccak256": "0x3691958c601fb95eade5004942070d42dadff724b559bac3026c159ee2fb2591",
+		"testTransfer.sol": {
+			"keccak256": "0xee89ebc4f75c27fed50d98ab2cc988587d97cca9d458898bc2487d7f96f4e483",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://0a26c7987de46ed599d9d6ab1931f5234edcf83fb694fa1a292f000c56da1672",
-				"dweb:/ipfs/Qmazpugb2yZi3j1oZWHdivUis95YGo7gyXmufvnsoUXxxN"
+				"bzz-raw://52b2b06b8952b19292c4abbfb447dc9744565e6b66567a7777d0fb859859fc12",
+				"dweb:/ipfs/QmS3sB3NnR4HK1i7ghSPgcEb4WudhHeMPiuNKxTeZxbkfx"
 			]
 		}
 	},

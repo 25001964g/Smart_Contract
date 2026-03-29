@@ -12,9 +12,22 @@
 			},
 			{
 				"inputs": [],
+				"name": "betAmount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "confirmWinner",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -93,7 +106,7 @@
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -167,12 +180,38 @@
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
 				"inputs": [],
 				"name": "playerViewAns",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "rewardTokenAmount",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "winnerReward",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -197,7 +236,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"stage2.sol": "Game"
+			"Game.sol": "Game"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -211,12 +250,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"stage2.sol": {
-			"keccak256": "0x99eea80d4ee85847ad09018f1ff05540a45106b78e738590bb54bf9280ec7e47",
+		"Game.sol": {
+			"keccak256": "0x20b0f7960bcb6476eab845b38dd8e78afaf2d1ea7a96287e2786e0b894791a52",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8f085abc37f3c8fd99273525a7bb151d200d16ddef27c66b6db0bd304388a77f",
-				"dweb:/ipfs/QmNMotPDtzU1uMkGDgx4EWUJSDHCLavZzFD2W3nLdMH74b"
+				"bzz-raw://f3d00c8d94168d13bc598f8d78d95b94c8e93d6fb6645ada7f1c08ce717e3c2b",
+				"dweb:/ipfs/QmZQYrTvJVYHu2VQhRerEhmbU3KSXetvN2u42mBBy5R9ZQ"
 			]
 		}
 	},

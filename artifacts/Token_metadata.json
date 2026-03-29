@@ -253,7 +253,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"stage1.sol": "Token"
+			"Game.sol": "Token"
 		},
 		"evmVersion": "osaka",
 		"libraries": {},
@@ -267,12 +267,12 @@
 		"remappings": []
 	},
 	"sources": {
-		"stage1.sol": {
-			"keccak256": "0x6821d8824456de0860990dc4caab6589ed455f49201ee81b21df616191639c75",
+		"Game.sol": {
+			"keccak256": "0x20b0f7960bcb6476eab845b38dd8e78afaf2d1ea7a96287e2786e0b894791a52",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://24e98d8728bd6e8415ac548b359e85d3eb2ce2ea6085173def0494ca0fd97d3c",
-				"dweb:/ipfs/QmdH69dD7rUazghhs7ret18TkiMik2j8jDS1VA8KbWX7GT"
+				"bzz-raw://f3d00c8d94168d13bc598f8d78d95b94c8e93d6fb6645ada7f1c08ce717e3c2b",
+				"dweb:/ipfs/QmZQYrTvJVYHu2VQhRerEhmbU3KSXetvN2u42mBBy5R9ZQ"
 			]
 		}
 	},
