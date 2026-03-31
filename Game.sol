@@ -117,16 +117,15 @@ contract Game{
     uint256 private player2Ans;
     uint256 private player2PW;
     bytes32 private player2Hash;
-    
-    //Plyer Status Handling
-    enum Status { None, Submitted, Confirmed, Winner }
-    Status private player1Status;
-    Status private player2Status;
 
     address private winner;
 
     //Game Status Handling
-    enum gameStatus {noGame, gameActivated, waitingPlayer, gameFinished}
+    enum gameStatus {
+        noGameCreated, 
+        gameStart, waitingPlayer, noPlayerJoin,
+        waitingReveal, Player1_revealed, Player2_revealed, 
+        rewardToBeClaimed, gameFinished, actionTimeout}
     gameStatus private gStatus;
 
     //token Status
@@ -134,57 +133,62 @@ contract Game{
     mapping(address => uint256) public gameCount;
 
     //Bet and Token requirement
-    uint256 public betAmount = 2 ether;
+    uint256 public betAmount = 5500000 gwei; //0.0055 ETH
     uint256 public rewardTokenAmount = 100;
-    uint256 public winnerReward = 3 ether;
+    uint256 public winnerReward = 10000000 gwei; //0.01 ETH, 0.001ETH is the entrance fee
     uint256 private pool;
 
     //time limit handling
-    uint256 public constant timeout = 1 minutes;
+    uint256 public constant timeout = 3 minutes;
+    uint256 public constant noPlayerTimeout = 10 minutes;
     mapping(address => uint256) private startTime;
-
 
     constructor(address _tokenAddress) {
             rewardTokenAddress = IToken(_tokenAddress);
     }
 
-    function coolDownClock() private{
+    function actionTimer() private{
         startTime[msg.sender] = block.timestamp;
     }
 
     function timeoutHandle() private {
+    actionTimer();
     if (block.timestamp >= startTime[msg.sender]+timeout){
-            closeGame();
+            gStatus = gameStatus.actionTimeout;
         } 
     }
-//Game Function:
-//Step 1: Once both game host and player submit the Number, that means they agree to join the game
 
-    //Hash function for commit and reveal
-    //Limitation: There is not any on-chain randomness. Players need to be responsible for the security of Password. -> Development: Deploy a frontend in JavaScript and generate off-chain randomness.
-    function player1Hashing(uint256 _player1Ans, uint256 _player1PW) private pure returns (bytes32){
-        return keccak256(abi.encodePacked(_player1Ans, _player1PW));
+    function noPlayerJoin() private{
+        actionTimer();
+        if (block.timestamp >= startTime[msg.sender]+timeout){
+            gStatus = gameStatus.noPlayerJoin;
+        } 
     }
 
-    function player2Hashing(uint256 _player2Ans, uint256 _player2PW) private pure returns (bytes32){
-        return keccak256(abi.encodePacked(_player2Ans, _player2PW));
+//Game Function:
+//Step 1: Once both game host (as a player) and player submit the Number, that means they agree to join the game
+//The one who created game will be player 1
+    //Hash function for commit and reveal
+    //Limitation: There is not any on-chain randomness. Players need to be responsible for the security of Password. -> Development: Deploy a frontend in JavaScript and generate off-chain randomness.
+    function playerHashing(uint256 _playerAns, uint256 _playerPW) private pure returns (bytes32){
+        return keccak256(abi.encodePacked(_playerAns, _playerPW));
     }
 
     function createGame(uint256 _player1Ans, uint256 _player1PW) public payable returns (uint256) {
-        require(gStatus == gameStatus.noGame, "You have already running the game");
-        require(msg.value == betAmount, "You must send exactly 0.02 ether to bet");
+        require(gStatus == gameStatus.noGameCreated, "You have already running the game");
+        require(msg.value == betAmount, "You must send exactly 0.005 ether (i.e. 500000 gwei) to bet");
 
         pool += msg.value;
         player1 = msg.sender;
         player1Ans = _player1Ans;
         player1PW = _player1PW;
-        player1Hash = player1Hashing(player1Ans,player1PW);
-        player1Status = Status.Submitted;
+        player1Hash = playerHashing(player1Ans,player1PW);
         gStatus = gameStatus.waitingPlayer;
         gameCount[msg.sender]++;
         return player1Ans;
     }
 
+// For the one who join the game is player 2
     function joinGame(uint256 _player2Ans, uint256 _player2PW) public payable returns (uint256) {
         require(msg.sender != player1, "You already join the game");
         require(gStatus == gameStatus.waitingPlayer, "No game is created or Game is already started");
@@ -194,36 +198,54 @@ contract Game{
         player2 = msg.sender;
         player2Ans = _player2Ans;
         player2PW = _player2PW;
-        player2Hash = player2Hashing(player2Ans,player2PW);
-        player2Status = Status.Submitted;
-        gStatus = gameStatus.gameActivated;
+        player2Hash = playerHashing(player2Ans,player2PW);
+        gStatus = gameStatus.gameStart;
         return player2Ans;
     }
 
 //Step 2: Reveal to authenticate the identity of the one who submit
     function player1Reveal(uint256 _player1PW_Confirm) public returns (bool, string memory){
-        require(msg.sender == player1, "Only player1 can submit Password");
+        require(msg.sender == player1, "Only player1 can submit Password.");
+        require(gStatus != gameStatus.noGameCreated, "No game is created.");
+        require(gStatus != gameStatus.waitingPlayer, "Please wait for player to join the game.");
+        require(gStatus != gameStatus.Player1_revealed, "You have already finished the reveal process.");
+        require(gStatus != gameStatus.rewardToBeClaimed, "This round of game has finished.");
+        require(gStatus != gameStatus.gameFinished, "This round of game has finished.");
         bytes32 checkplayer1Hash = keccak256(abi.encodePacked(player1Ans, _player1PW_Confirm));
         require(checkplayer1Hash == player1Hash, "The Password is not correct, Please try again.");
-            player1Status = Status.Confirmed;
+            if (gStatus == gameStatus.Player2_revealed){
+                gStatus = gameStatus.rewardToBeClaimed;
+            } else {
+                gStatus = gameStatus.Player1_revealed;
+            }
             return (true, "Confirmed");
     }
 
     function player2Reveal(uint256 _playerPW_Confirm) public returns (bool, string memory){
         require(msg.sender == player2, "Only player can submit Password");
+        require(gStatus != gameStatus.noGameCreated, "No game is created.");
+        require(gStatus != gameStatus.Player2_revealed, "You have already finished the reveal process.");
+        require(gStatus != gameStatus.rewardToBeClaimed, "This round of game has finished.");
+        require(gStatus != gameStatus.gameFinished, "This round of game has finished.");
         bytes32 checkplayerHash = keccak256(abi.encodePacked(player2Ans, _playerPW_Confirm));
         require(checkplayerHash == player2Hash, "The Password is not correct, Please try again.");
-            player2Status = Status.Confirmed;
+            if (gStatus == gameStatus.Player1_revealed){
+                gStatus = gameStatus.rewardToBeClaimed;
+            } else {
+                gStatus = gameStatus.Player2_revealed;
+            }
             return (true, "Confirmed");
     }
 
 //View Function for Answer
     function player1ViewAns() public view returns(uint256){
+        require(gStatus != gameStatus.noGameCreated, "No Answer is submitted.");
         require(msg.sender == player1, "only player1 can view the answer");
         return player1Ans;
     }
 
     function player2ViewAns() public view returns (uint256) {
+        require(gStatus != gameStatus.noGameCreated || gStatus != gameStatus.waitingPlayer, "No Answer is submitted.");
         require(msg.sender == player2, "only player2 can view the answer");
         return player2Ans;
     }
@@ -234,9 +256,13 @@ contract Game{
         return result;
     }
 
+//player should view the result to confrim whether he/she can claim the reward, no gas fee should be payed
     function gameResult() public view returns(uint256, string memory){
-        require(player1Status == Status.Confirmed, "Player1 do not reveal");
-        require(player2Status == Status.Confirmed, "Player2 do not reveal");
+        require(gStatus != gameStatus.noGameCreated, "No game is created.");
+        require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
+        require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
+        require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
+        require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
         uint256 result = calculateGameResult();
         if (result<=3){
             return (result, "Player1 win, please confirm you are the Winner and get reward!");
@@ -245,55 +271,58 @@ contract Game{
         }
     }
 
-//Step 4: Confirm Winner and Get Reward
+//Step 4: Confirm Winner and Claim Reward
 //Changing state for the winner to get reward more safety, and Winner should pay for the gas fee
-function confirmWinner() public payable{
-    require(player1Status == Status.Confirmed, "Player1 do not reveal");
-    require(player2Status == Status.Confirmed, "Player2 do not reveal");
-    uint256 result = calculateGameResult();
+    function claimReward() public payable{
+        require(gStatus != gameStatus.noGameCreated, "No game is created.");
+        require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
+        require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
+        require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
+        require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
+        uint256 result = calculateGameResult();
 
-    if (result <= 3) {
-            require(msg.sender == player1, "Only player1 can confirm");
-            require(player1Status == Status.Confirmed, "You are not allow to confirm winner at this stage");
-
-            player1Status = Status.Winner;
+        if (result <= 3) {
+            require(msg.sender == player1, "Only player1 can confirm");         
+            gStatus=gameStatus.gameFinished;
             winner = player1;
-            } else {
-            require(msg.sender == player2, "Only player2 can confirm");
-            require(player2Status == Status.Confirmed, "You are not allow to confirm winner at this stage");
-
-            player2Status = Status.Winner;
+        } else {
+            require(msg.sender == player2, "Only player2 can confirm"); 
+            gStatus=gameStatus.gameFinished;
             winner = player2;
-            }
-            gStatus = gameStatus.gameFinished;
-            pool -= winnerReward;
-            require(msg.value == winnerReward, "Winner Reward should be");
-            //winner recieve rewards
-            //ETH Bet
-            (bool success, ) = payable(winner).call{value: winnerReward}("");
-            require(success, "Reward payout failed");
-            //Token
-            tokenBalance[winner] += rewardTokenAmount;
-    }
+        }
+        gStatus = gameStatus.gameFinished;
+        pool -= winnerReward;
+        require(msg.value == winnerReward, "Winner Reward should be");
+        //winner recieve rewards
+        //ETH Bet
+        (bool success, ) = payable(winner).call{value: winnerReward}("");
+        require(success, "Reward payout failed");
+        //Token
+        tokenBalance[winner] += rewardTokenAmount;
+        }
 
     function resetState() private {
-        gStatus = gameStatus.noGame;
+        gStatus = gameStatus.noGameCreated;
         player1 = address (0);
         player2 = address(0);
-        player1Status = Status.None;
-        player2Status = Status.None;
+        gStatus = gameStatus.noGameCreated;
     }
 
     function restartGame(uint256 _ans, uint256 _PW) public payable{
-        require(gStatus == gameStatus.gameFinished, "Game is not finished or not created");
         require(msg.sender == player1, "Only player1 can restart the game.");
+        require(gStatus != gameStatus.noGameCreated, "No game is created.");
+        require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
+        require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
+        require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
+        require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
+        require(gStatus != gameStatus.rewardToBeClaimed, "Reward is not yet claimed.");   
         require(msg.value == betAmount, "Bet required");
         resetState();
         createGame(_ans, _PW);
     }
 
     function closeGame() public{
-        require(msg.sender == player1, "Only player1 can close the game.");
+        require(msg.sender == player1, "Only game creator can close the game.");
         require(gStatus == gameStatus.gameFinished, "Game is not finished or not created");
         resetState();
         gameCount[msg.sender] = 0;
