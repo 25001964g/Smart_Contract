@@ -153,11 +153,11 @@ contract Game{
 //Reward for game involved: increased the bonus every 20 games. Total reward will be up to 6000gwei
     function joinTokenReward(address player) private {
         if(gameCount[player] % 20 == 0){
-            join_rewardTokenAmount++;
-        } else if (join_rewardTokenAmount > 10){
-            join_rewardTokenAmount;
+            join_rewardIncrease++;
+        } else if (join_rewardIncrease > 10){
+            join_rewardIncrease;
         }
-        join_rewardTokenAmount=1000000000*(1-join_rewardTokenAmount);
+        join_rewardTokenAmount=1000000000*(1-join_rewardIncrease);
     }
 
     //time limit handling
@@ -227,14 +227,14 @@ contract Game{
         player2Ans = _player2Ans;
         player2PW = _player2PW;
         player2Hash = playerHashing(player2Ans,player2PW);
-        gStatus = gameStatus.gameStart;
+        gStatus = gameStatus.waitingReveal;
         gameCount[msg.sender]++;
         emit join_game(msg.sender, "Player 2 has joined.");
     }
 
 //Step 2: Reveal to authenticate the identity of the one who submit
     function playerReveal(uint256 _pw_confirm) public{
-        require(gStatus == gameStatus.gameStart || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed, "Reveal not allowed in current state");
+        require(gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed, "Reveal not allowed in current state");
         if (msg.sender == player1){
             player1Reveal(_pw_confirm);
         } else if (msg.sender == player2){
@@ -246,7 +246,7 @@ contract Game{
     
     function player1Reveal(uint256 _player1PW_Confirm) private{
         require(gStatus != gameStatus.Player1_revealed, "You have already finished the reveal process.");
-        bytes32 checkplayer1Hash = keccak256(abi.encode(player1Ans, _player1PW_Confirm));
+        bytes32 checkplayer1Hash = playerHashing(player1Ans, _player1PW_Confirm);
         require(checkplayer1Hash == player1Hash, "The Password is not correct, Please try again.");
             if (gStatus == gameStatus.Player2_revealed){
                 gStatus = gameStatus.rewardToBeClaimed;
@@ -260,7 +260,7 @@ contract Game{
 
     function player2Reveal(uint256 _playerPW_Confirm) private{
         require(gStatus != gameStatus.Player2_revealed, "You have already finished the reveal process.");
-        bytes32 checkplayer2Hash = keccak256(abi.encode(player2Ans, _playerPW_Confirm));
+        bytes32 checkplayer2Hash = playerHashing(player2Ans, _playerPW_Confirm);
         require(checkplayer2Hash == player2Hash, "The Password is not correct, Please try again.");
             if (gStatus == gameStatus.Player1_revealed){
                 gStatus = gameStatus.rewardToBeClaimed;
@@ -292,11 +292,7 @@ contract Game{
 
 //player should view the result to confrim whether he/she can claim the reward, no gas fee should be payed
     function gameResult() public view returns(uint256, address, string memory){
-        require(gStatus != gameStatus.noGameCreated, "No game is created.");
-        require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
-        require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
-        require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
-        require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
+        require(gStatus == gameStatus.rewardToBeClaimed, "Both players must complete reveal first.");
         uint256 result = calculateGameResult();
         if (result<=3){
             return (result, player1, "The above player win, please confirm you are the Winner and get reward!");
