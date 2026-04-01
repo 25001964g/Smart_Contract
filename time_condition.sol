@@ -28,13 +28,26 @@ contract coolDownGame{
             gStatus = gameStatus.actionTimeout;
         } else if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+timeout){
             gStatus = gameStatus.noPlayerJoin;
-        }   else {
-            gStatus = gameStatus.rewardToBeClaimed;
         }  
     }
 
-    function claimTimeout() public{
-        
+    function claimTimeout() private{
+        timeoutHandle();
+           // Case 2: Only player1 joined → player1 can claim refund
+        if (gStatus == gameStatus.noPlayerJoin) {
+            token[player1] += 100;
+            resetState();
+            return;
+        }
+    
+    // Case 3: Any other player (in case of timeout)
+        else if (gStatus == gameStatus.actionTimeout) {
+            token[msg.sender] += 200;
+            resetState();
+            return;
+        } else {
+            gStatus = gameStatus.rewardToBeClaimed;
+        }
     }
 
     function viewTimeout() public view returns(string memory){
@@ -81,39 +94,16 @@ contract coolDownGame{
         return winner;
     }
 
-function claimReward() public {
-    timeoutHandle();
-     if (msg.sender == winner){
-
-        if (gStatus == gameStatus.rewardToBeClaimed || gStatus == gameStatus.actionTimeout) {
-            token[msg.sender] += 200;
-            resetState();
-            return;      
-        } else {
-            revert ("Error Reward");
-        }
-    } 
-    else if(msg.sender == player1){
-        if (gStatus == gameStatus.noPlayerJoin) {
-            token[player1] += 100;
-            resetState();
-            return;
-        } else {
-            revert ("Error no Player");
-        }
+function claimReward() public{
+    require(gStatus == gameStatus.rewardToBeClaimed);
+    claimTimeout();    
+    if(gStatus == gameStatus.rewardToBeClaimed){
+    require(msg.sender == winner);
+    token[msg.sender] += 200;
+    resetState();
     }
-    else if (msg.sender != winner){
-        if (gStatus == gameStatus.actionTimeout) {
-            token[msg.sender] += 200;
-            resetState();
-            return;
-        } else {
-            revert ("Error non Winner");
-        }
-    }
-
-}
-
+} 
+    
     function viewToken() public view returns(uint8){
         return token[msg.sender];
     }
