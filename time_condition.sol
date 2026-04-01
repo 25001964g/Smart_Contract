@@ -83,16 +83,7 @@ contract coolDownGame{
 
 function claimReward() public {
     timeoutHandle();
-    if(msg.sender == player1){
-        if (gStatus == gameStatus.noPlayerJoin) {
-            token[player1] += 100;
-            resetState();
-            return;
-        } else {
-            revert ("Error no Player");
-        }
-    }
-    else if (msg.sender == winner){
+     if (msg.sender == winner){
 
         if (gStatus == gameStatus.rewardToBeClaimed || gStatus == gameStatus.actionTimeout) {
             token[msg.sender] += 200;
@@ -101,7 +92,17 @@ function claimReward() public {
         } else {
             revert ("Error Reward");
         }
-    } else if (msg.sender != winner){
+    } 
+    else if(msg.sender == player1){
+        if (gStatus == gameStatus.noPlayerJoin) {
+            token[player1] += 100;
+            resetState();
+            return;
+        } else {
+            revert ("Error no Player");
+        }
+    }
+    else if (msg.sender != winner){
         if (gStatus == gameStatus.actionTimeout) {
             token[msg.sender] += 200;
             resetState();
