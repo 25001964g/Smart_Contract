@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-//Stage 1: Token
+//========Stage 1: Token===========
 contract Token {
 
     
@@ -99,7 +99,7 @@ interface IToken {
     function balanceOf(address account) external view returns (uint256);
 }
 
-
+//=========Stage 2: Dice Game=========
 contract Game{
 
     IToken public rewardTokenAddress;
@@ -136,37 +136,43 @@ contract Game{
 
     //Game Status Handling
     enum gameStatus {
-        noGameCreated, 
-        gameStart, waitingPlayer, noPlayerJoin,
-        waitingReveal, Player1_revealed, Player2_revealed, revealTimeout,
-        rewardToBeClaimed, rewardClaimTimeout,
-        noAction}
+        noGameCreated, //Empty Game Room Status
+        waitingPlayer, noPlayerJoin, //Player Join Status
+        waitingReveal, Player1_revealed, Player2_revealed, //Reveal Status
+        player1_revealTimeout, player2_revealTimeout, //Reveal Timeout Status
+        rewardToBeClaimed, rewardClaimTimeout, //Claim Reward Status
+        noAction //There is no new action => avoid game stuck
+        }
     gameStatus private gStatus;
 
-    //token Status
-    mapping(address => uint256) private tokenBalance;
-
-    //Common
+    //Common Status
     address private winner;
     mapping(address => uint256) private gameCount;
+    mapping(address => uint256) private tokenBalance;
 
     //Bet and Token requirement
-    uint256 public betAmount = 5500000 gwei; //0.0055 ETH
-    uint256 public basic_rewardTokenAmount = 5000000000; //token amount * 600 = 3000gwei
+    uint256 public betAmount = 5500000 gwei; //0.0055 ETH ~11USD
+    uint256 public basic_rewardTokenAmount = 100000000000; //token amount * 600 = 3000gwei
     uint256 private join_rewardTokenAmount;
-    uint8 private join_rewardIncrease = 1;
     uint256 private total_rewardTokenAmount;
-    uint256 public winnerReward = 10000000 gwei; //0.01 ETH, 0.001ETH is the entrance fee
+    uint256 public winnerReward = 10000000 gwei; //0.01 ETH, ~20 USD, 0.001ETH ~2USD is the entrance fee
     uint256 private pool;
 
-//Reward for game involved: increased the bonus every 20 games. Total reward will be up to 6000gwei
+//Reward for game involved: increased the bonus with milestone method.
     function joinTokenReward(address player) private {
-        if(gameCount[player] % 20 == 0){
-            join_rewardIncrease++;
-        } else if (join_rewardIncrease > 10){
-            join_rewardIncrease;
+        if(gameCount[player] >= 800){
+            join_rewardTokenAmount = 60000000000; //token to USD: ~0.07 USD
+        } else if (gameCount[player] >= 560){
+            join_rewardTokenAmount = 48000000000;
+        } else if (gameCount[player] >= 360){
+            join_rewardTokenAmount = 32000000000;
+        } else if (gameCount[player] >= 200){
+            join_rewardTokenAmount = 17000000000;
+        } else if (gameCount[player] >= 100){
+            join_rewardTokenAmount = 7000000000;
+        } else if (gameCount[player] >= 40){
+            join_rewardTokenAmount = 2000000000;
         }
-        join_rewardTokenAmount=1000000000*(1-join_rewardIncrease);
     }
 
     //time limit handling
@@ -185,11 +191,13 @@ contract Game{
         } 
     }
 
-    function reveal_timeout() private {
-        if (gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime+timeout){
-            gStatus = gameStatus.revealTimeout;
-        } 
+function reveal_timeout() private {
+    if (gStatus == gameStatus.Player1_revealed && block.timestamp >= startTime + timeout) {
+        gStatus = gameStatus.player2_revealTimeout; 
+    } else if (gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime + timeout) {
+        gStatus = gameStatus.player1_revealTimeout;
     }
+}
 
     function reward_timeout() private{
          if (gStatus == gameStatus.rewardToBeClaimed && block.timestamp >= startTime+timeout){
@@ -203,13 +211,16 @@ contract Game{
         }
     }
 
+//View Timeout Status
     function viewTimeout() public view returns(string memory){
-        if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+timeout) {
-            return "No player Join timeout";
-        } else if (gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime+timeout){
-            return "Reveal timeout";
-        } else if (gStatus == gameStatus.noAction) {
-            return "No action timeout";
+        if (gStatus != gameStatus.noGameCreated && block.timestamp >= startTime+noActionTimeout) {
+            return "No action timeout.";
+        } else if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+timeout) {
+            return "No player Join timeout.";
+        } else if (gStatus == gameStatus.Player1_revealed && block.timestamp >= startTime + timeout){
+            return "Player 2 Reveal timeout.";
+        } else if (gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime + timeout){
+            return "Player 1 Reveal timeout.";
         } else {
             return "no timeout";
         }
@@ -372,10 +383,10 @@ contract Game{
             require(msg.sender == player2, "Only player2 can confirm"); 
             winner = player2;
         }
-        pool -= winnerReward;
-        require(msg.value == winnerReward, "Winner Reward should be");
         //winner recieve rewards
         //ETH Bet
+        pool -= winnerReward;
+        require(msg.value == winnerReward, "Winner Reward should be");
         (bool success, ) = payable(winner).call{value: winnerReward}("");
         require(success, "Reward payout failed");
         //Token
@@ -383,6 +394,43 @@ contract Game{
         emit game_result(msg.sender, result, winnerReward, total_rewardTokenAmount, "This round of game is finished.");
         resetState();
         }
+
+//When players do not do an action during a step, they can claim timeout rewards regardless the game result
+    function claimTimeoutReward() public payable{
+        noPlayerJoin_timeout();
+        reveal_timeout();
+        reward_timeout();
+        noAction_timeout();
+        
+        if (gStatus == gameStatus.noPlayerJoin){
+            require(msg.sender == player1, "You are not allow to claim the refund");
+            //ETH refund
+            pool -= betAmount;
+            require(msg.value == betAmount, "Bet Amount is the refund amount.");
+            (bool success, ) = payable(player1).call{value: betAmount}("");
+            require(success, "Reward payout failed");
+        } else if (gStatus == gameStatus.player2_revealTimeout){ //player2 fail to reveal
+            //ETH reward
+            pool -= winnerReward;
+            require(msg.value == winnerReward, ".");
+            (bool success, ) = payable(player1).call{value: winnerReward}("");
+            require(success, "Reward payout failed");
+        } else if (gStatus == gameStatus.player1_revealTimeout){ //player1 fail to reveal
+            //ETH reward
+            pool -= winnerReward;
+            require(msg.value == winnerReward, ".");
+            (bool success, ) = payable(player2).call{value: winnerReward}("");
+            require(success, "Reward payout failed");
+        } else if (gStatus == gameStatus.rewardClaimTimeout){ //winner do not get reward on time, both players can get the reward
+            //ETH reward
+            pool -= winnerReward;
+            require(msg.value == winnerReward, ".");
+            (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
+            require(success, "Reward payout failed");
+            //token reward
+            tokenBalance[winner] += basic_rewardTokenAmount;
+        }
+    }
 
     //out game function
     //View token amount
