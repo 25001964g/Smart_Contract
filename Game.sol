@@ -118,6 +118,15 @@ contract Game{
     uint256 private player2PW;
     bytes32 private player2Hash;
 
+    //check player
+    function isPlayer(address playerAddress) private view returns(bool){
+        if(playerAddress == player1 || playerAddress == player2){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //Event Handling
     event create_game(address indexed gameCreator, string messgae);
     event join_game(address indexed gameJoiner, string message);
@@ -129,8 +138,9 @@ contract Game{
     enum gameStatus {
         noGameCreated, 
         gameStart, waitingPlayer, noPlayerJoin,
-        waitingReveal, Player1_revealed, Player2_revealed, 
-        rewardToBeClaimed, actionTimeout}
+        waitingReveal, Player1_revealed, Player2_revealed, revealTimeout,
+        rewardToBeClaimed, rewardClaimTimeout,
+        noAction}
     gameStatus private gStatus;
 
     //token Status
@@ -138,7 +148,6 @@ contract Game{
 
     //Common
     address private winner;
-    uint256 private hostGameCount;
     mapping(address => uint256) private gameCount;
 
     //Bet and Token requirement
@@ -161,30 +170,60 @@ contract Game{
     }
 
     //time limit handling
-    uint256 private constant timeout = 3 minutes;
+    uint256 private constant timeout = 1 minutes;
     uint256 private constant noPlayerTimeout = 10 minutes;
-    mapping(address => uint256) private startTime;
-
-    constructor(address _tokenAddress) {
-            rewardTokenAddress = IToken(_tokenAddress);
-    }
+    uint256 private constant noActionTimeout = 2 minutes;
+    uint256 private startTime;
 
     function actionTimer() private{
-        startTime[msg.sender] = block.timestamp;
+        startTime = block.timestamp;
     }
-
-    function timeoutHandle() private {
-    actionTimer();
-    if (block.timestamp >= startTime[msg.sender]+timeout){
-            gStatus = gameStatus.actionTimeout;
-        } 
-    }
-
-    function noPlayerJoin() private{
-        actionTimer();
-        if (block.timestamp >= startTime[msg.sender]+timeout){
+//Timeout Status Handler
+    function noPlayerJoin_timeout() private{
+        if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+timeout){
             gStatus = gameStatus.noPlayerJoin;
         } 
+    }
+
+    function reveal_timeout() private {
+        if (gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime+timeout){
+            gStatus = gameStatus.revealTimeout;
+        } 
+    }
+
+    function reward_timeout() private{
+         if (gStatus == gameStatus.rewardToBeClaimed && block.timestamp >= startTime+timeout){
+            gStatus = gameStatus.rewardClaimTimeout;
+        }        
+    }
+
+    function noAction_timeout() private{
+        if (gStatus != gameStatus.noGameCreated && block.timestamp >= startTime+noActionTimeout) {
+            gStatus = gameStatus.noAction;
+        }
+    }
+
+    function viewTimeout() public view returns(string memory){
+        if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+timeout) {
+            return "No player Join timeout";
+        } else if (gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime+timeout){
+            return "Reveal timeout";
+        } else if (gStatus == gameStatus.noAction) {
+            return "No action timeout";
+        } else {
+            return "no timeout";
+        }
+    }
+
+//Reset Game for next round
+    function resetState() private {
+        gStatus = gameStatus.noGameCreated;
+        player1 = address (0);
+        player2 = address(0);
+    }
+
+    constructor(address _tokenAddress) {
+        rewardTokenAddress = IToken(_tokenAddress);
     }
 
 //Game Function:
@@ -197,14 +236,22 @@ contract Game{
     }
 
     function joinGame(uint8 _ans, uint256 _pw) public payable{
-        require(gStatus != gameStatus.gameStart, "The game has already started");
+        noPlayerJoin_timeout();
+        noAction_timeout();
+        if (gStatus == gameStatus.noAction){ //if noone get refund from no player joining or claiming reward, the remaing eth will belongs to the contract owner
+            resetState();
+        }
+        require(isPlayer(msg.sender) == false, "You have already join");
+        require(gStatus == gameStatus.noGameCreated || gStatus == gameStatus.waitingPlayer && gStatus != gameStatus.noPlayerJoin, "The game has already started. If there is no action for 3 minutes, please claim timeout full refund for no player join.");
         require(gStatus != gameStatus.rewardToBeClaimed, "The game has finished.");
         require(msg.value == betAmount, "You must send exactly 0.005 ether (i.e. 500000 gwei) to bet");
         pool += msg.value;
         if (gStatus == gameStatus.noGameCreated){
         player1_info(_ans, _pw);
+        startTime = block.timestamp;
         } else if(gStatus == gameStatus.waitingPlayer){
         player2_info(_ans, _pw);
+        startTime = block.timestamp;
         } else {
             revert("The game has already had two players.");
         }
@@ -222,7 +269,7 @@ contract Game{
 
 // For the one who join the game is player 2
     function player2_info(uint8 _player2Ans, uint256 _player2PW) private {
-        require(msg.sender != player1, "You already join the game");
+        require(isPlayer(msg.sender) == false, "You already join the game");
         player2 = msg.sender;
         player2Ans = _player2Ans;
         player2PW = _player2PW;
@@ -234,13 +281,16 @@ contract Game{
 
 //Step 2: Reveal to authenticate the identity of the one who submit
     function playerReveal(uint256 _pw_confirm) public{
+        require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed, "Reveal not allowed in current state");
         if (msg.sender == player1){
             player1Reveal(_pw_confirm);
+            startTime = block.timestamp;
         } else if (msg.sender == player2){
             player2Reveal(_pw_confirm);
+            startTime = block.timestamp;
         } else {
-            revert ("You are not the players of this game");
+            revert ("Reveal Error");
         }
     }
     
@@ -274,13 +324,14 @@ contract Game{
 
 //View Function for Answer
     function viewAnswer() public view returns(uint256){
+        require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus != gameStatus.noGameCreated, "No Answer is submitted.");
          if (msg.sender == player1){
             return player1Ans;
         } else if (msg.sender == player2){
             return player2Ans;
         } else {
-            revert ("You are not the players of this game");
+            revert ("View function Error");
         }
     }
 
@@ -292,6 +343,7 @@ contract Game{
 
 //player should view the result to confrim whether he/she can claim the reward, no gas fee should be payed
     function gameResult() public view returns(uint256, address, string memory){
+        require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus == gameStatus.rewardToBeClaimed, "Both players must complete reveal first.");
         uint256 result = calculateGameResult();
         if (result<=3){
@@ -303,13 +355,9 @@ contract Game{
 
 //Step 4: Confirm Winner and Claim Reward
 //Changing state for the winner to get reward more safety, and Winner should pay for the gas fee
-    function resetState() private {
-        gStatus = gameStatus.noGameCreated;
-        player1 = address (0);
-        player2 = address(0);
-    }
 
     function claimReward() public payable{
+        require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus != gameStatus.noGameCreated, "No game is created.");
         require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
         require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
@@ -335,27 +383,6 @@ contract Game{
         emit game_result(msg.sender, result, winnerReward, total_rewardTokenAmount, "This round of game is finished.");
         resetState();
         }
-
-
-/*    function restartGame(uint8 _ans, uint256 _PW) public payable{
-        require(msg.sender == player1, "Only player1 can restart the game.");
-        require(gStatus != gameStatus.noGameCreated, "No game is created.");
-        require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
-        require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
-        require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
-        require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
-        require(gStatus != gameStatus.rewardToBeClaimed, "Reward is not yet claimed.");   
-        require(msg.value == betAmount, "Bet required");
-        resetState();
-        createGame(_ans, _PW);
-    }*/
-
-    /*function closeGame() public{
-        require(msg.sender == player1, "Only game creator can close the game.");
-        require(gStatus == gameStatus.gameFinished, "Game is not finished or not created");
-        resetState();
-        hostGameCount = 0;
-    }*/
 
     //out game function
     //View token amount
