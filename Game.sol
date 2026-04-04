@@ -140,7 +140,7 @@ contract Game{
         noGameCreated, //Empty Game Room Status
         waitingPlayer, noPlayerJoin, //Player Join Status
         waitingReveal, Player1_revealed, Player2_revealed, //Reveal Status
-        player1_revealTimeout, player2_revealTimeout, //Reveal Timeout Status
+        player1_revealTimeout, player2_revealTimeout, noRevealTimeout,//Reveal Timeout Status
         rewardToBeClaimed, rewardClaimTimeout, //Claim Reward Status
         noAction //There is no new action => avoid game stuck
         }
@@ -158,9 +158,10 @@ contract Game{
     uint256 private total_rewardTokenAmount;
     uint256 public winnerReward = 10000000 gwei; //0.01 ETH, ~20 USD
     uint256 private entryFee = 1000000 gwei; // 0.001ETH ~2USD
-    uint256 private pool;
+    uint256 private rewardAmount;
 
     function betHandling(address player) private{
+        require(ethBalance[msg.sender] >= betAmount, "Insufficient balance");
         ethBalance[player] -= betAmount;
     }
 
@@ -202,6 +203,8 @@ function reveal_timeout() private {
         gStatus = gameStatus.player2_revealTimeout; 
     } else if (gStatus == gameStatus.Player2_revealed && block.timestamp >= startTime + timeout) {
         gStatus = gameStatus.player1_revealTimeout;
+    } else if (gStatus == gameStatus.waitingReveal && block.timestamp >= startTime + timeout) {
+        gStatus = gameStatus.noRevealTimeout;
     }
 }
 
@@ -382,7 +385,7 @@ function reveal_timeout() private {
 //Step 4: Confirm Winner and Claim Reward
 //Changing state for the winner to get reward more safety, and Winner should pay for the gas fee
 
-    function claimReward(uint256 amount) public payable{
+    function claimReward() public payable{
         require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus != gameStatus.noGameCreated, "No game is created.");
         require(gStatus != gameStatus.waitingPlayer, "Game is not started.");
@@ -394,18 +397,11 @@ function reveal_timeout() private {
         if (result <= 3) {
             require(msg.sender == player1, "Only player1 can confirm");         
             winner = player1;
-            ethBalance[msg.sender] += winnerReward;
         } else {
             require(msg.sender == player2, "Only player2 can confirm"); 
             winner = player2;
-            ethBalance[msg.sender] += winnerReward;
         }
         //winner recieve rewards
-        //ETH Bet
-        amount = winnerReward;
-        require(ethBalance[msg.sender] >= amount, "Insufficient balance");
-        ethBalance[msg.sender] -= amount;
-        require(amount == winnerReward, "Winner Reward is the refund amount.");
         resetState();
         (bool success, ) = payable(winner).call{value: winnerReward}("");
         require(success, "Reward payout failed");
@@ -415,57 +411,44 @@ function reveal_timeout() private {
         }
 
 //When players do not do an action during a step, they can claim timeout rewards regardless the game result
-    function claimTimeoutReward(uint256 amount) public payable{
+    function claimTimeoutReward() public payable{
+        require(isPlayer(msg.sender) == true, "You are not the player in this game");
         noPlayerJoin_timeout();
         reveal_timeout();
         reward_timeout();
         //noAction_timeout();
+        require(gStatus != gameStatus.noRevealTimeout, "Noone reveal yet, please remember to reveal.");
+        require(gStatus != gameStatus.noAction, "The game is outdated, please join the next game.");
         
         if (gStatus == gameStatus.noPlayerJoin){
             require(msg.sender == player1, "You are not allow to claim the refund");
-            //ETH refund
-            amount = betAmount;
-            ethBalance[msg.sender] -= amount;
-            require(amount == betAmount, "Bet Amount is the refund amount.");
             resetState(); //avoid reentrancy
+            //ETH refund
             (bool success, ) = payable(msg.sender).call{value: betAmount}("");
             require(success, "Reward payout failed");
         } else if (gStatus == gameStatus.player2_revealTimeout){ //player2 fail to reveal
             require(msg.sender == player1, "You are not allow to claim the refund");
-            //ETH reward
-            amount = winnerReward;
-            ethBalance[msg.sender] += winnerReward;
-            require(ethBalance[msg.sender] >= amount, "Insufficient balance");
-            ethBalance[msg.sender] -= amount;
-            require(amount == winnerReward, "Winner Reward is the refund amount.");
             resetState();
+            //ETH reward
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
             require(success, "Reward payout failed");
         } else if (gStatus == gameStatus.player1_revealTimeout){ //player1 fail to reveal
             require(msg.sender == player2, "You are not allow to claim the refund");
-            //ETH reward
-            amount = winnerReward;
-            ethBalance[msg.sender] += winnerReward;
-            require(ethBalance[msg.sender] >= amount, "Insufficient balance");
-            ethBalance[msg.sender] -= amount;
-            require(amount == winnerReward, "Winner Reward is the refund amount.");
             resetState();
+            //ETH reward
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
             require(success, "Reward payout failed");
         } else if (gStatus == gameStatus.rewardClaimTimeout){ //winner do not get reward on time, both players can get the reward
-            //ETH reward
-            amount = winnerReward;
-            ethBalance[msg.sender] += winnerReward;
-            require(ethBalance[msg.sender] >= amount, "Insufficient balance");
-            ethBalance[msg.sender] -= amount;
-            require(amount == winnerReward, "Winner Reward is the refund amount.");
             resetState();
+            //ETH reward
             require(msg.value == winnerReward, ".");
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
             require(success, "Reward payout failed");
             //token reward
             tokenBalance[winner] += basic_rewardTokenAmount;
             resetState();
+        } else {
+            revert("No Player revealed");
         }
     }
 
