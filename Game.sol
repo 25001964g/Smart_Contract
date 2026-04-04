@@ -26,8 +26,8 @@ contract Token {
         owner = payable(msg.sender);
     }
 
-    //Fallback Function
     receive() external payable {}  
+    //Fallback Function
     fallback() external payable {}   
 
     //View Function
@@ -103,6 +103,7 @@ interface IToken {
 contract Game{
 
     IToken public rewardTokenAddress;
+    address private gameOwner;
 
     uint256 private tokenAmount;
     mapping (address => uint256) private ethBalance;
@@ -142,7 +143,8 @@ contract Game{
         waitingReveal, Player1_revealed, Player2_revealed, //Reveal Status
         player1_revealTimeout, player2_revealTimeout, noRevealTimeout,//Reveal Timeout Status
         rewardToBeClaimed, rewardClaimTimeout, //Claim Reward Status
-        noAction //There is no new action => avoid game stuck
+        noAction, //There is no new action => avoid game stuck
+        gameClosed //Admin closed the game
         }
     gameStatus private gStatus;
 
@@ -251,6 +253,7 @@ function reveal_timeout() private {
 
     constructor(address _tokenAddress) {
         rewardTokenAddress = IToken(_tokenAddress);
+        gameOwner = msg.sender;
     }
 
 //Game Function:
@@ -452,7 +455,7 @@ function reveal_timeout() private {
         }
     }
 
-    //out game function
+    //Player view status
     //View token amount
     function viewToken() public view returns(uint256){
         return tokenBalance[msg.sender];
@@ -470,6 +473,24 @@ function reveal_timeout() private {
         bool tokenSuccess = rewardTokenAddress.transfer(winner, tokenAmount);
         require(tokenSuccess, "Not enough token in the game contract");
         emit withdraw_token(msg.sender, tokenAmount, "Withdrawed token");
+    }
+
+//Funtions for gameOwner (i.e. Admin)
+    function admin_withdrawETH()payable public {
+        require(msg.sender == gameOwner, "You have no permission to use the function");
+        require(address(this).balance > 0, "There is not any remainings in the game contract.");
+        (bool success, ) = msg.sender.call{value: address(this).balance}(""); //transfer all the remainings to the owner
+        require(success, "Transfer failed.");
+    }
+
+    function admin_closeGame()public {
+        require(msg.sender == gameOwner, "You have no permission to use the function");
+        require(gStatus == gameStatus.noGameCreated || gStatus == gameStatus.noAction, "There is game still ongoing. You cannot close the game now.");
+        gStatus = gameStatus.gameClosed;
+        if (address(this).balance > 0){
+            (bool success, ) = msg.sender.call{value: address(this).balance}(""); //transfer all the remainings to the owner
+            require(success, "Transfer failed.");   
+        }
     }
 
 }
