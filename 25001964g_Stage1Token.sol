@@ -1,42 +1,45 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+//========Stage 1: Token===========
 contract Token {
 
     
     address payable public owner;
 
-    //event
+    //Event Handling
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Mint(address indexed to, uint256 value);
     event Sell(address indexed from, uint256 value);
 
-    //token information
+    //Token Information
     string private _name = "DiceRewardToken";
     string private _symbol = "TKN";
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
     uint128 private _price = 600;
     
-    // token contract status
+    // Token Contract Status
     bool private _isClosed = false;
 
     constructor() {
         owner = payable(msg.sender);
     }
 
-    //fallback function
     receive() external payable {}  
-    fallback() external payable {}   
+    //Fallback Function
+    fallback() external payable {
+        revert("Invalid function call");
+    }   
 
-    //View function
+    //View Function
     function totalSupply() public view returns (uint256) { return _totalSupply; }
     function balanceOf(address account) public view returns (uint256) { return _balances[account]; }
     function getName() public view returns (string memory) { return _name; }
     function getSymbol() public view returns (string memory) { return _symbol; }
     function getPrice() public view returns (uint128) { return _price; }
 
-    //transfer token
+    //Transfer Token
     function transfer(address to, uint256 value) public returns (bool) {
         require(!_isClosed, "contract is closed");
         require(to != address(0), "transfer to zero address");
@@ -48,7 +51,7 @@ contract Token {
         return true;
     }
 
-    //mint token
+    //Mint Token
     function mint(address to, uint256 value) public returns (bool) {
         require(!_isClosed, "contract is closed");
         require(msg.sender == owner, "only owner can mint");
@@ -61,13 +64,13 @@ contract Token {
     }
 
 
-//sell token for wei
+//Sell Token for wei
     function sell(uint256 value) public returns (bool) {
         require(!_isClosed, "contract is closed");
         require(value > 0, "sell zero tokens");
         require(_balances[msg.sender] >= value, "insufficient balance");
 
-        uint256 ethAmount = value * 600;
+        uint256 ethAmount = value * _price;
         require(address(this).balance >= ethAmount, "contract has insufficient ETH");
 
         _balances[msg.sender] -= value;
@@ -79,7 +82,7 @@ contract Token {
         return true;
     }
 
-    //close contract
+    //Close Contract
     function close() public {
         require(msg.sender == owner, "only owner can close");
         require(!_isClosed, "already closed");
@@ -92,4 +95,3 @@ contract Token {
         }
     }
 }
-
