@@ -28,9 +28,7 @@ contract Token {
 
     receive() external payable {}  
     //Fallback Function
-    fallback() external payable {
-        revert("Invalid function call");
-    }   
+    fallback() external payable {}   
 
     //View Function
     function totalSupply() public view returns (uint256) { return _totalSupply; }
