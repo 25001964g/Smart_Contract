@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 interface IToken {
     function transfer(address to, uint256 value) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
-    function totalSupply() external view returns (uint256);
 }
 
 //=========Stage 2: Dice Game=========
@@ -56,7 +55,7 @@ contract Game{
 
     //In realworld, players should provide their hash with answer and password off chain when joining the game
     //This code is for testing purpose.
-    function playerCommitHash( uint8 _playerAns, uint256 _playerPW) public view returns (bytes32){
+    function player_commit_hash( uint8 _playerAns, uint256 _playerPW) public view returns (bytes32){
         return playerHashing(msg.sender, _playerAns, _playerPW);
     }
 
@@ -72,12 +71,12 @@ contract Game{
     mapping(address => uint256) private tokenBalance; //Player's token balance
 
     //View token amount
-    function viewTokenBalance() public view returns(uint256){
+    function view_token_balance() public view returns(uint256){
         return tokenBalance[msg.sender];
     }
 
     //View game count
-    function viewGameCount() public view returns(uint256){
+    function view_game_count() public view returns(uint256){
         return gameCount[msg.sender];
     }
 
@@ -94,7 +93,7 @@ contract Game{
        if(gameCount[player] >= 640){
             join_rewardTokenAmount = 30000000000; //token amount * 600 = 18000gwei ~0.04USD
         } else if (gameCount[player] >= 320){
-            join_rewardTokenAmount = 2000000000; //token amount * 600 = 12000gwei ~0.02USD
+            join_rewardTokenAmount = 20000000000; //token amount * 600 = 12000gwei ~0.02USD
         } else if (gameCount[player] >= 160){
             join_rewardTokenAmount = 10000000000; //token amount * 600 = 6000gwei ~0.01USD
         } else if (gameCount[player] >= 80){
@@ -107,9 +106,9 @@ contract Game{
     }
 
     //Time limit for game status
-    uint256 private constant timeout = 1 minutes;
-    uint256 private constant noPlayerTimeout = 2 minutes;
-    uint256 private constant noActionTimeout = 3 minutes;
+    uint256 private constant timeout = 20;
+    uint256 private constant noPlayerTimeout = 100;
+    uint256 private constant noActionTimeout = 200;
     uint256 private startTime;
 
     function actionTimer() private{
@@ -149,7 +148,7 @@ function reveal_timeout() private {
     }
 
 //View Timeout Status
-    function viewTimeout() public view returns(string memory){
+    function view_timeout() public view returns(string memory){
         if (gStatus != gameStatus.noGameCreated && block.timestamp >= startTime+noActionTimeout) {
             return "No action timeout, please join another game.";
         } else if (gStatus == gameStatus.waitingPlayer && block.timestamp >= startTime+noPlayerTimeout) {
@@ -192,7 +191,7 @@ function reveal_timeout() private {
     event ETH_Withdraw(address indexed owner, uint256 withdrawETH, string message);
     event game_Closed(address indexed gameOwner, string message);    
 
-//Re-entrancy Lock
+//Re-entrancy Lock modifier
     bool private locked;
 
     modifier reentrancyLock{
@@ -204,9 +203,9 @@ function reveal_timeout() private {
 
 //Normal Game Logic:
 //Step 1:  When players submit the bet amount and hash, that means they agree to join the game
-    function joinGame(bytes32 _hashCommit) public payable{
+    function join_Game(bytes32 _hashCommit) public payable{
         require(gStatus != gameStatus.gameClosed, "This contract has been closed.");
-        require(rewardTokenAddress.totalSupply() < (type(uint256).max - 80000000000),"Total Supply has reach the maximum number, new game is not available");
+        require(rewardTokenAddress.balanceOf(address(this)) >= 80000000000 /*Max Token Reward of one game */,"There is not enough token in the contract, new game is not available");
         //check timeout
         noPlayerJoin_timeout();
         noAction_timeout();
@@ -250,7 +249,7 @@ function reveal_timeout() private {
 //Step 2: Reveal to authenticate the identity of the one who submit
     //Players should submit the answer and password for hashing function 
     //to compare the submitted hash is whether correct after hashing submitted answer and password at this step.
-    function playerReveal(uint8 _ans, uint256 _pw_confirm) public{
+    function player_Reveal(uint8 _ans, uint256 _pw_confirm) public{
         require(gStatus != gameStatus.gameClosed, "This contract has been closed.");
         require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus == gameStatus.waitingReveal || gStatus == gameStatus.Player1_revealed || gStatus == gameStatus.Player2_revealed, "Reveal not allowed in current state");
@@ -301,7 +300,7 @@ function reveal_timeout() private {
 
 //Step 3: View game result to know who is the winner
 //Player can view the result to confrim whether that player can claim the reward before claiming reward.
-    function gameResult() public view returns(uint256, address, string memory){
+    function game_Result() public view returns(uint256, address, string memory){
          require(gStatus != gameStatus.gameClosed, "This contract has been closed.");
         require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus == gameStatus.rewardToBeClaimed, "Both players must complete reveal first.");
@@ -316,7 +315,7 @@ function reveal_timeout() private {
 //Step 4: Claim Reward
 //Winner should pay for the gas fee
 
-    function claimReward() public payable reentrancyLock{
+    function claim_Reward() public payable reentrancyLock{
          require(gStatus != gameStatus.gameClosed, "This contract has been closed.");
         require(isPlayer(msg.sender)== true, "You are not the players of this game");
         require(gStatus != gameStatus.noGameCreated, "No game is created.");
@@ -324,6 +323,7 @@ function reveal_timeout() private {
         require(gStatus != gameStatus.waitingReveal, "Please submit your answer to confirm your identity.");
         require(gStatus != gameStatus.Player1_revealed, "Please wait for player2 to submit answer to confirm identity.");
         require(gStatus != gameStatus.Player2_revealed, "Please wait for player1 to submit answer to confirm identity.");
+        require(address(this).balance >= winnerReward, "The contract do not have enough balance");
         uint8 result = calculateGameResult();
         if (result <= 3) {
             require(msg.sender == player1, "Only player1 can confirm");         
@@ -344,7 +344,7 @@ function reveal_timeout() private {
 
 //Timeout Reward or Refund Handling
 //When players do not do an action during a step, they can claim timeout rewards/refund regardless the game result
-    function claimTimeoutReward() public payable reentrancyLock{
+    function claim_Timeout_Reward() public payable reentrancyLock{
         require(gStatus != gameStatus.gameClosed, "This contract has been closed.");
         require(isPlayer(msg.sender) == true, "You are not the player in this game");
         noPlayerJoin_timeout();
@@ -356,6 +356,7 @@ function reveal_timeout() private {
         
         if (gStatus == gameStatus.noPlayerJoin){
             require(msg.sender == player1, "You are not allow to claim the refund");
+            require(address(this).balance >= betAmount, "The contract do not have enough balance");
             resetState(); //avoid reentrancy
             //ETH refund
             (bool success, ) = payable(msg.sender).call{value: betAmount}("");
@@ -363,6 +364,7 @@ function reveal_timeout() private {
             emit timeout_Refund(msg.sender, betAmount, "Bet Refund has been received.");
         } else if (gStatus == gameStatus.player2_revealTimeout){ //player2 fail to reveal
             require(msg.sender == player1, "You are not allow to claim the refund");
+            require(address(this).balance >= winnerReward, "The contract do not have enough balance");
             resetState();
             //ETH reward
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
@@ -370,12 +372,14 @@ function reveal_timeout() private {
             emit reveal_timeout_Reward(msg.sender, betAmount, "Winner reward has been received due to timeout.");
         } else if (gStatus == gameStatus.player1_revealTimeout){ //player1 fail to reveal
             require(msg.sender == player2, "You are not allow to claim the refund");
+            require(address(this).balance >= winnerReward, "The contract do not have enough balance");
             resetState();
             //ETH reward
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
             require(success, "Reward payout failed");
             emit reveal_timeout_Reward(msg.sender, betAmount, "Winner reward has been received due to timeout.");
         } else if (gStatus == gameStatus.rewardClaimTimeout){ //winner do not get reward on time, both players can get the reward
+            require(address(this).balance >= winnerReward, "The contract do not have enough balance");
             resetState();
             //ETH reward
             (bool success, ) = payable(msg.sender).call{value: winnerReward}("");
@@ -390,7 +394,7 @@ function reveal_timeout() private {
 
     //Withdraw token: only when using withdraw function, the game contract transfer token to player
     //** token will not be transfered when the game finished
-    function withdrawToken(uint256 _tokenAmount) public reentrancyLock{
+    function withdraw_Token(uint256 _tokenAmount) public reentrancyLock{
         require(tokenBalance[msg.sender] >= _tokenAmount, "Not enough token for withdraw.");    
         tokenBalance[msg.sender] -= _tokenAmount;
         require(rewardTokenAddress.balanceOf(address(this)) >= _tokenAmount, "Not enough token in the game contract");
@@ -400,7 +404,7 @@ function reveal_timeout() private {
     }
 
 //Funtions for gameOwner (i.e. Admin)
-    function admin_withdrawETH(uint256 _withdrawETH)payable public reentrancyLock{
+    function admin_withdraw_ETH(uint256 _withdrawETH)payable public reentrancyLock{
         require(msg.sender == gameOwner, "You have no permission to use the function");
         require(gStatus == gameStatus.noGameCreated || gStatus == gameStatus.noAction, "There is game still ongoing. You cannot close the game now."); // The game owner can only withdraw the ETH when there is not any game ongoing.
        //Require the admin to left remainings in the contract
@@ -410,7 +414,7 @@ function reveal_timeout() private {
         emit ETH_Withdraw(msg.sender, _withdrawETH, "Withdrawed ETH");
     }
 
-    function admin_closeGame()public reentrancyLock{
+    function admin_close_Game()public reentrancyLock{
         require(msg.sender == gameOwner, "You have no permission to use the function");
         require(gStatus == gameStatus.noGameCreated || gStatus == gameStatus.noAction, "There is game still ongoing. You cannot close the game now."); // The game owner can only close the game when there is not any game ongoing.
         gStatus = gameStatus.gameClosed;
