@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 interface IToken {
     function transfer(address to, uint256 value) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
-    function owner() external view returns (address payable);
+    function owner() external view returns (address);
 }
 
 //=========Stage 2: Dice Game=========
@@ -15,7 +15,7 @@ contract Game{
 
     constructor(address _tokenAddress) {
         rewardTokenAddress = IToken(_tokenAddress);
-        require(msg.sender == IToken.owner(), "Only the owner of token can create the game");
+        require(msg.sender == rewardTokenAddress.owner(), "Only the owner of token can create the game");
         gameOwner = msg.sender;
     }
 
@@ -125,9 +125,9 @@ contract Game{
     //uint256 private constant timeout = 15; ~ 3 minutes
     //uint256 private constant noPlayerTimeout = 25; ~ 5 minutes
     //uint256 private constant noActionTimeout = 50; ~ 10 minutes
-    uint256 private constant timeout = 1 minutes;
-    uint256 private constant noPlayerTimeout = 2 minutes;
-    uint256 private constant noActionTimeout = 3 minutes;
+    uint256 private constant timeout = 3 minutes;
+    uint256 private constant noPlayerTimeout = 5 minutes;
+    uint256 private constant noActionTimeout = 10 minutes;
     uint256 private startTime;
 
     function actionTimer() private{
