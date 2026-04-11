@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 interface IToken {
     function transfer(address to, uint256 value) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
+    function owner() external view returns (address payable);
 }
 
 //=========Stage 2: Dice Game=========
@@ -14,6 +15,7 @@ contract Game{
 
     constructor(address _tokenAddress) {
         rewardTokenAddress = IToken(_tokenAddress);
+        require(msg.sender == IToken.owner(), "Only the owner of token can create the game");
         gameOwner = msg.sender;
     }
 
